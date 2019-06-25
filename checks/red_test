@@ -1,0 +1,3 @@
+echo "This would be a failing execution"
+
+exit 1
