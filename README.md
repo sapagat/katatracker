@@ -46,9 +46,9 @@ katatracker present
 
 Once opened, these are the most useful keys:
 
-- `up` & `down` to navigate through commits
+- `up` & `down` arrows to navigate through commits
 - `enter` to select a commit
-- `j` & `k` to scroll in the code (you will need to select a commit first)
+- `ctrl + u` & `ctrl + d` to scroll up and down in the code (you will need to select a commit first)
 - `q` will close view(s)
 
 
