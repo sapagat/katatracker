@@ -35,6 +35,8 @@ For example:
 katatracker tc rspec
 ```
 
+Notice that you should run this command inside a git project. This means that at some point you should have done `git init`.
+
 ### Present (present)
 
 This command makes usage of Tig, a terminal interface that makes it easy to navigate through `git`.
