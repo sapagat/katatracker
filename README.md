@@ -8,8 +8,13 @@ KataTracker commits each step you perform in a kata. Each time you run the tests
 
 ### Dependencies
 
-- `git`: https://git-scm.com/downloads
-- `tig`: Very light terminal interface for git. https://jonas.github.io/tig/INSTALL.html
+- `git`: version control system. https://git-scm.com
+  - Ubuntu: `sudo apt install git`
+  - MacOS: `brew install git`
+
+- `tig`: text-mode interface for Git. https://jonas.github.io/tig.
+  - Ubuntu: `sudo apt install tig`
+  - MacOS: `brew install tig`
 
 ### Install katatracker
 
@@ -20,9 +25,20 @@ sudo chmod +x /usr/local/bin/katatracker
 
 ## Usage
 
+### Initialize git
+
+KataTracker makes use of Git in order to track the steps you take during the Kata. You will need to have an initialized git project on your working directory.
+
+You can initialize it as follows:
+
+```
+cd <kata-directory>
+git init
+```
+
 ### Test & Commit (tc)
 
-This command commits automatically each time you run the test and also includes the test output so that you can share it later.
+This command runs the tests and automatically commits each time you execute it. The commits  include both the code changes and the test output so that you can share it later.
 
 ```
 katatracker tc <your test command>
@@ -34,7 +50,7 @@ For example:
 katatracker tc rspec
 ```
 
-Notice that you should run this command inside a git project. This means that at some point you should have done `git init`.
+**Notice**: You should run the tests with this command and frequently.
 
 ### Present (present)
 
