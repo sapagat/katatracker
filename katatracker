@@ -1,119 +1,97 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env bash
 
-class TestAndCommit
-  OUTPUT_FILE = '/tmp/kata-tracker.txt'
+REPOSITORY_URL='https://github.com/sapagat/katatracker'
+OUTPUT_FILE='/tmp/katatracker.txt'
+GREEN_COLOR="\033[0;32m"
+RED_COLOR="\033[0;31m"
+NO_COLOR="\033[0;m"
+GREEN_ICON=✅
+RED_ICON=❌
 
-  class << self
-    def do(parameters)
-      check_valid!(parameters)
+test_and_commit() {
+  test_command=$@
+  fail_if_invalid_test_command $test_command
 
-      result = run_tests(parameters)
-      print_tests_ouput(result)
-      commit_changes(result)
-    end
-
-    private
-
-    def check_valid!(parameters)
-      if parameters.empty?
-        puts "At least a test command is required. For example, rspec or npm test."
-        exit 1
-      end
-    end
-
-    def run_tests(parameters)
-      test_command = parameters.join(' ')
-      system("eval #{test_command} > #{OUTPUT_FILE}")
-      test_exit_status = $?
-      output = File.read(OUTPUT_FILE)
-      Result.for(test_exit_status, output)
-    end
-
-    def commit_changes(result)
-      system('git', 'add', '-A')
-      system('git', 'commit', '-m', result.code_message)
-      commit_exit_status = $?
-      if commit_exit_status.success?
-        system('git', 'commit', '--allow-empty','-m', result.output_message, '-m', result.output)
-      end
-    end
-
-    def print_tests_ouput(result)
-      puts result.colorized_output
-    end
-
-    class Result
-      GREEN_COLOR = "\033[0;32m"
-      RED_COLOR = "\033[0;31m"
-      NO_COLOR = "\033[0;m"
-
-      def self.for(test_exit_status, output)
-        if test_exit_status.success?
-          new('GREEN', '✅', GREEN_COLOR, output)
-        else
-          new('RED', '❌', RED_COLOR, output)
-        end
-      end
-
-      attr_reader :output
-
-      def initialize(status, icon, color, output)
-        @status = status
-        @icon = icon
-        @color = color
-        @output = output
-        @timestamp = Time.now.to_i
-      end
-
-      def code_message
-        "#{@icon} #{@status} #{@timestamp} - CODE"
-      end
-
-      def output_message
-        "#{@icon} #{@status} #{@timestamp} - OUTPUT"
-      end
-
-      def colorized_output
-        "#{@color}#{@output}#{NO_COLOR}"
-      end
-    end
-  end
-end
-
-class Present
-  class << self
-    def do(_parameters)
-      make_sure_tig_configured
-      launch_tig
-    end
-
-    private
-
-    def make_sure_tig_configured
-      system('bash', '-c', 'git config --local --add tig.vertical-split false')
-      system('bash', '-c', 'git config --local --add tig.split-view-height 90%')
-      system('bash', '-c', 'git config --local --add tig.commit-order reverse')
-    end
-
-    def launch_tig
-      system('bash', '-c', 'tig')
-    end
-  end
-end
-
-COMMANDS = {
-  'tc' => TestAndCommit,
-  'present' => Present
+  test_status="$(run_tests $test_command)"
+  print_tests_ouput $test_status
+  commit_changes $test_status
 }
-REPOSITORY_URL = 'https://github.com/sapagat/katatracker'
 
-command = COMMANDS[ARGV[0]]
-if command.nil?
-  puts "KataTracker - Increments matter.\n\n"
-  puts "Supported commands are:#{COMMANDS.keys.join(', ')}\n\n"
-  puts "More details here: #{REPOSITORY_URL}"
-  exit 0
-end
+fail_if_invalid_test_command() {
+  test_command=$@
+  if [[ -z $test_command ]]; then
+    echo "At least a test command is required. For example, rspec or npm test."
+    exit 1
+  fi
+}
 
-parameters = ARGV[1..-1]
-command.do(parameters)
+run_tests() {
+  test_command=$@
+  eval $test_command > $OUTPUT_FILE
+  if [ $? -eq 0 ]; then
+    status='GREEN'
+  else
+    status='RED'
+  fi
+  echo $status
+}
+
+print_tests_ouput() {
+  status=$1
+  if [ $status == 'GREEN' ]; then
+    color=$GREEN_COLOR
+  else
+    color=$RED_COLOR
+  fi
+  printf "${color}$(cat $OUTPUT_FILE)${NO_COLOR}\n"
+}
+
+commit_changes() {
+  status=$1
+  timestamp="$(date +%s)"
+  if [ $status == 'GREEN' ]; then
+    icon=$GREEN_ICON
+  else
+    icon=$RED_ICON
+  fi
+  message_prefix="${icon} ${status} ${timestamp}"
+
+  git add -A
+  git commit -m "$message_prefix - CODE"
+  if [ $? -eq 0 ]; then
+    git commit --allow-empty -m "$message_prefix - OUTPUT" -m "$(cat $OUTPUT_FILE)"
+  fi
+}
+
+present() {
+  ensure_tig_configured
+  launch_tig
+}
+
+ensure_tig_configured() {
+  git config --local --add tig.vertical-split false
+  git config --local --add tig.split-view-height 90%
+  git config --local --add tig.commit-order reverse
+}
+
+launch_tig() {
+  tig
+}
+
+command=$1
+case $command in
+  "tc")
+    shift
+    test_command=$@
+    test_and_commit $test_command
+    ;;
+  "present")
+    present
+    ;;
+  *)
+    echo "KataTracker - Increments matter."
+    echo
+    echo "Supported commands are: tc , present"
+    echo
+    echo "More details here: ${REPOSITORY_URL}"
+esac
