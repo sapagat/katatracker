@@ -10,6 +10,7 @@ KataTracker commits each step you perform in a kata. Each time you run the tests
 
 - `git`: https://git-scm.com/downloads
 - `tig`: Very light terminal interface for git. https://jonas.github.io/tig/INSTALL.html
+- `ruby`: Any `2.x >=` version should do.
 
 
 ### Install katatracker
