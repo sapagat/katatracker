@@ -2,9 +2,6 @@
 
 REPOSITORY_URL='https://github.com/sapagat/katatracker'
 OUTPUT_FILE='/tmp/katatracker.txt'
-GREEN_COLOR="\033[0;32m"
-RED_COLOR="\033[0;31m"
-NO_COLOR="\033[0;m"
 GREEN_ICON=✅
 RED_ICON=❌
 
@@ -13,7 +10,6 @@ test_and_commit() {
   fail_if_invalid_test_command $test_command
 
   test_status="$(run_tests $test_command)"
-  print_tests_ouput $test_status
   commit_changes $test_status
 }
 
@@ -27,23 +23,13 @@ fail_if_invalid_test_command() {
 
 run_tests() {
   test_command=$@
-  eval $test_command > $OUTPUT_FILE
+  eval $test_command > $OUTPUT_FILE 2>&1
   if [ $? -eq 0 ]; then
     status='GREEN'
   else
     status='RED'
   fi
   echo $status
-}
-
-print_tests_ouput() {
-  status=$1
-  if [ $status == 'GREEN' ]; then
-    color=$GREEN_COLOR
-  else
-    color=$RED_COLOR
-  fi
-  printf "${color}$(cat $OUTPUT_FILE)${NO_COLOR}\n"
 }
 
 commit_changes() {
@@ -54,28 +40,11 @@ commit_changes() {
   else
     icon=$RED_ICON
   fi
-  message_prefix="${icon} ${status} ${timestamp}"
+  message_prefix="${icon} ${timestamp}"
 
   git add -A
-  git commit -m "$message_prefix - CODE"
-  if [ $? -eq 0 ]; then
-    git commit --allow-empty -m "$message_prefix - OUTPUT" -m "$(cat $OUTPUT_FILE)"
-  fi
-}
 
-present() {
-  ensure_tig_configured
-  launch_tig
-}
-
-ensure_tig_configured() {
-  git config --local --add tig.vertical-split false
-  git config --local --add tig.split-view-height 90%
-  git config --local --add tig.commit-order reverse
-}
-
-launch_tig() {
-  tig
+  git commit -m "$message_prefix" -m "$(cat $OUTPUT_FILE)"
 }
 
 command=$1
@@ -85,13 +54,17 @@ case $command in
     test_command=$@
     test_and_commit $test_command
     ;;
-  "present")
-    present
+  "watch")
+    shift
+    test_command=$@
+    while inotifywait -qqre modify,create './'; do clear; test_and_commit $test_command; done
     ;;
-  *)
+    *)
     echo "KataTracker - Increments matter."
     echo
-    echo "Supported commands are: tc , present"
+    echo "Supported commands are:"
+    echo "tc <test-command>"
+    echo "watch <test-command>"
     echo
     echo "More details here: ${REPOSITORY_URL}"
 esac

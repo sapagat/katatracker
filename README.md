@@ -12,10 +12,6 @@ KataTracker commits each step you perform in a kata. Each time you run the tests
   - Ubuntu: `sudo apt install git`
   - MacOS: `brew install git`
 
-- `tig`: text-mode interface for Git. https://jonas.github.io/tig.
-  - Ubuntu: `sudo apt install tig`
-  - MacOS: `brew install tig`
-
 ### Install katatracker
 
 ```
@@ -36,7 +32,7 @@ cd <kata-directory>
 git init
 ```
 
-### Test & Commit (tc)
+### Test & Commit
 
 This command runs the tests and automatically commits each time you execute it. The commits  include both the code changes and the test output so that you can share it later.
 
@@ -50,23 +46,13 @@ For example:
 katatracker tc rspec
 ```
 
-**Notice**: You should run the tests with this command and frequently.
+### Watch
 
-### Present (present)
-
-This command makes usage of Tig, a terminal interface that makes it easy to navigate through `git`.
+This does the same as `tc` but it will run it for you when a file has changed.
 
 ```
-katatracker present
+katatracker watch <test-command>
 ```
-
-Once opened, these are the most useful keys:
-
-- `up` & `down` arrows to navigate through commits
-- `enter` to select a commit
-- `ctrl + u` & `ctrl + d` to scroll up and down in the code (you will need to select a commit first)
-- `q` will close view(s)
-
 
 ## Development
 
